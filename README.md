@@ -1,5 +1,7 @@
-# Java-Snake-Game
-Java Snake game source code
+# SNAKESNAKEFISHFISH
+Supachot Suksawat       630615040
+Navaporn Leesuravanich  630615025
+Sorawich Yeampraseot    630615042
 
 
 
