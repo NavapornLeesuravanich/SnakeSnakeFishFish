@@ -1,7 +1,7 @@
 package com.zetcode;
 
 import java.awt.EventQueue;
-import javax.swing.JFrame;
+import javax.swing.*;
 
 public class Snake extends JFrame {
 
@@ -17,9 +17,11 @@ public class Snake extends JFrame {
         setResizable(false);
         pack();
 
-        setTitle("Snake EIEI");
+        setTitle("Snake3310");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ImageIcon icon = new ImageIcon("src/resources/icon.png");
+        setIconImage(icon.getImage());
     }
 
 

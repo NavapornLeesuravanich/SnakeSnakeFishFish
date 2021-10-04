@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.security.Key;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -21,15 +22,15 @@ public class Board extends JPanel implements ActionListener {
 
     private final int B_WIDTH = 600; //width screen
     private final int B_HEIGHT = 600; //height screen
-    private final int DOT_SIZE = 10;
-    private final int ALL_DOTS = 3600;
-    private final int RAND_POS = 60;
+    private final int DOT_SIZE = 10;  //size of icon (px)
+    private final int ALL_DOTS = 3600; //how many dots in screen
+    private final int RAND_POS = 60;  //rand pos in screen (use in apple)
     private int DELAY = 140; //snake speed
 
     private final int x[] = new int[ALL_DOTS];
     private final int y[] = new int[ALL_DOTS];
 
-    private int dots;
+    private int dots; //snake length
     private int score=0;
     private int apple_x;
     private int apple_y;
@@ -39,29 +40,27 @@ public class Board extends JPanel implements ActionListener {
     private boolean upDirection = false;
     private boolean downDirection = false;
     private boolean inGame = true;
+    private boolean status = false;
 
-    private Timer timer;
+    private Timer timer;  //speed snake
     private Image ball;
     private Image apple;
     private Image head;
 
     public Board() {
-
         initBoard();
     }
 
     private void initBoard() {
-
         addKeyListener(new TAdapter());
         setBackground(Color.black);
         setFocusable(true);
-
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         loadImages();
         initGame();
     }
 
-    private void loadImages() {
+    private void loadImages() {  //load image of snake apple and tail
 
         ImageIcon iid = new ImageIcon("src/resources/dot.png");
         ball = iid.getImage();
@@ -73,16 +72,16 @@ public class Board extends JPanel implements ActionListener {
         head = iih.getImage();
     }
 
-    private void updateTime(){
+    private void updateSpeed(){
         DELAY -= 5; // speed increase when snake eats the apple
         if(DELAY >= 40) {
             timer.setDelay(DELAY);
         }
     }
 
-    private void initGame() {
+    private void initGame() {  //initial game kit
 
-        dots = 2;
+        dots = 2; //start with head and tail
 
         for (int z = 0; z < dots; z++) {
             x[z] = 50 - z * 10;
@@ -102,9 +101,9 @@ public class Board extends JPanel implements ActionListener {
         doDrawing(g);
     }
 
-    private void doDrawing(Graphics g) {
+    private void doDrawing(Graphics g) {   //render game graphic
 
-        if (inGame) {
+        if (inGame && status) {
 
             g.drawImage(apple, apple_x, apple_y, this);
 
@@ -118,65 +117,78 @@ public class Board extends JPanel implements ActionListener {
 
             Toolkit.getDefaultToolkit().sync();
             Score(g);
-        } else {
-
+        } else if(inGame == false && status == true) {
             gameOver(g);
+        }
+        else{
+            startMessageDisplay(g);
         }
     }
 
-    private void gameOver(Graphics g) {
+    private void gameOver(Graphics g) {  //to show score and langth of the snake when dead and show text to restart
 
         String msg = "Game Over!";
         String msg2 = "Score: " + score + " " + "Length: " + dots;
-        Font small = new Font("Comic Sans",Font.BOLD,14 );
+        Font small = new Font("helvetica ",Font.BOLD,14 );
         FontMetrics messageSize = getFontMetrics(small);
-
         g.setColor(Color.RED);
         g.setFont(small);
         g.drawString(msg, (B_WIDTH - messageSize.stringWidth(msg)) / 2, B_HEIGHT / 2);
+
         g.setColor(Color.WHITE);
         g.drawString(msg2, (B_WIDTH - messageSize.stringWidth(msg2)) / 2, (B_HEIGHT / 2) + 20);
-        restartMessageDisplay(g);
-    }
 
-    private void Score(Graphics g) {
-        Font small = new Font("Helvetica", Font.BOLD, 14);
-        g.setColor(Color.WHITE);
-        g.setFont(small);
-        g.drawString("Score: " + score, 520, 25);
-        g.drawString("Speed: " + timer.getDelay(), 520, 45);
-    }
-
-    public void restartMessageDisplay(Graphics g) {
         String restartMessage = " Press Enter to restart";
-        Font small = new Font("Arial", Font.BOLD, 14);
         g.setColor(Color.YELLOW);
         FontMetrics metrics = getFontMetrics(small);
         g.drawString(restartMessage, (B_WIDTH - metrics.stringWidth(restartMessage)) / 2, (B_HEIGHT / 2) + 40);
+    }
+
+    private void Score(Graphics g) {  //to show score at the right corner
+        Font small = new Font("helvetica", Font.BOLD, 14);
+        g.setColor(Color.WHITE);
+        g.setFont(small);
+        g.drawString("Score: " + score, 520, 25);
+      //  g.drawString("Speed: " + timer.getDelay(), 520, 45);
+    }
+
+
+
+    public void startMessageDisplay(Graphics g) {  //show the start screen when open game first time
+        String msg = "Welcome to Snake Game!";
+        String msg2 = "Press spacebar to start game";
+        Font small = new Font("helvetica ",Font.BOLD,16 );
+        FontMetrics messageSize = getFontMetrics(small);
+
+        g.setColor(Color.green);
+        g.setFont(small);
+        g.drawString(msg, (B_WIDTH - messageSize.stringWidth(msg)) / 2, B_HEIGHT / 2);
+        g.setColor(Color.WHITE);
+        g.drawString(msg2, (B_WIDTH - messageSize.stringWidth(msg2)) / 2, (B_HEIGHT / 2) + 30);
 
     }
 
 
-    private void checkApple() {
-        double randNeg =(Math.random());
-        double randPosi =(Math.random());
+    private void checkApple() {  //to check that snake eats apple or not
+        double randNeg =(Math.random()); //random to decrease scale of snake or not
+        double randPosi =(Math.random()); //random to increase(+3) scale of snake or not
         if ((x[0] == apple_x) && (y[0] == apple_y)) {
             if(randNeg < 0.5){
-                dots--;
+                dots--; //decrease snake length
             }else{
                 if(randPosi < 0.5){
-                    dots++;
+                    dots++; //increase snake length by 1
                 }else{
-                    dots+=3;
+                    dots+=3; //increase snake length by 3
                 }
             }
-            score++;
-            updateTime();
-            locateApple();
+            score++;  //update score
+            updateSpeed();  //to update speed of snake
+            locateApple();  //to locate new apple
         }
     }
 
-    private void move() {
+    private void move() {  //move snake
 
         for (int z = dots; z > 0; z--) {
             x[z] = x[(z - 1)];
@@ -200,41 +212,45 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void checkCollision() {
+    private void checkCollision() { //check snake is on border or eat yourself or not
 
-        for (int z = dots; z > 0; z--) {
+        for (int z = dots; z > 0; z--) {  //eat yourself
 
             if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {
                 inGame = false;
             }
         }
 
+        //bottom border
         if (y[0] >= B_HEIGHT) {
             inGame = false;
         }
-
+        //top border
         if (y[0] < 0) {
             inGame = false;
         }
-
+        //right border
         if (x[0] >= B_WIDTH) {
             inGame = false;
         }
-
+        //left border
         if (x[0] < 0) {
             inGame = false;
         }
+
+        //length snake
         if(dots == 0){
             inGame = false;
         }
 
+        //if inGame = false snake will stop
         if (!inGame) {
             timer.stop();
         }
 
     }
 
-    private void locateApple() {
+    private void locateApple() {  //random apple
 
         int r = (int) (Math.random() * RAND_POS);
         apple_x = ((r * DOT_SIZE));
@@ -244,7 +260,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) { //game loop
 
         if (inGame) {
 
@@ -257,39 +273,38 @@ public class Board extends JPanel implements ActionListener {
         repaint();
     }
 
-    private class TAdapter extends KeyAdapter {
+    private class TAdapter extends KeyAdapter {  //listen keypress
 
         @Override
         public void keyPressed(KeyEvent e) {
 
             int key = e.getKeyCode();
-
-            if ((key == KeyEvent.VK_LEFT) && (!rightDirection)) {
+            //left
+            if (((key == KeyEvent.VK_LEFT) || (key == KeyEvent.VK_A)) && (!rightDirection)) {
                 leftDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
-
-            if ((key == KeyEvent.VK_RIGHT) && (!leftDirection)) {
+            //right
+            if (((key == KeyEvent.VK_RIGHT) || (key == KeyEvent.VK_D)) && (!leftDirection)) {
                 rightDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
-
-            if ((key == KeyEvent.VK_UP) && (!downDirection)) {
+            //up
+            if (((key == KeyEvent.VK_UP) || (key == KeyEvent.VK_W)) && (!downDirection)) {
                 upDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
-
-            if ((key == KeyEvent.VK_DOWN) && (!upDirection)) {
+            //down
+            if (((key == KeyEvent.VK_DOWN) || (key == KeyEvent.VK_S)) && (!upDirection)) {
                 downDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
             //game restart
             if(key == KeyEvent.VK_ENTER) {
-
                 if(!inGame) {
                     inGame = true;
                     leftDirection = false;
@@ -299,6 +314,12 @@ public class Board extends JPanel implements ActionListener {
                     score = 0;
                     DELAY = 140;
                     initBoard();
+                }
+            }
+            //start game
+            if(key == KeyEvent.VK_SPACE) {
+                if(!status) {
+                    status = true;
                 }
             }
         }
