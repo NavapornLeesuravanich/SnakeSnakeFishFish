@@ -45,6 +45,7 @@ public class Board extends JPanel implements ActionListener {
     private boolean status = false;
     private boolean normalMode = false;
     private boolean luckMode = false;
+    private boolean randomMode = false;
 
     private Timer timer;  //speed snake
 
@@ -338,6 +339,16 @@ public class Board extends JPanel implements ActionListener {
                     downDirection = false;
                     score = 0;
                     DELAY = 140;
+                    if(randomMode == true){
+                        double randMode = Math.random();
+                        if(randMode > 0.5){
+                            normalMode = true;
+                            luckMode = false;
+                        }else{
+                            luckMode = true;
+                            normalMode = false;
+                        }
+                    }
                     initBoard();
                 }
             }
@@ -348,6 +359,7 @@ public class Board extends JPanel implements ActionListener {
                     normalMode = false;
                     luckMode = false;
                     inGame=false;
+                    randomMode =false;
                     leftDirection = false;
                     rightDirection = true;
                     upDirection = false;
@@ -390,7 +402,7 @@ public class Board extends JPanel implements ActionListener {
                     }
                     status = true;
                     inGame= true;
-
+                    randomMode =true;
                 }
 
             }
