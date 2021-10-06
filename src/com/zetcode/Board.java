@@ -1,5 +1,6 @@
 package com.zetcode;
 
+import java.util.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,6 +17,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.JButton;
+import java.util.TimerTask;
 
 
 public class Board extends JPanel implements ActionListener {
@@ -39,10 +41,13 @@ public class Board extends JPanel implements ActionListener {
     private boolean rightDirection = true;
     private boolean upDirection = false;
     private boolean downDirection = false;
-    private boolean inGame = true;
+    private boolean inGame = false;
     private boolean status = false;
+    private boolean normalMode = false;
+    private boolean luckMode = false;
 
     private Timer timer;  //speed snake
+
     private Image ball;
     private Image apple;
     private Image head;
@@ -82,13 +87,13 @@ public class Board extends JPanel implements ActionListener {
     private void initGame() {  //initial game kit
 
         dots = 2; //start with head and tail
-
         for (int z = 0; z < dots; z++) {
             x[z] = 50 - z * 10;
             y[z] = 50;
         }
 
         locateApple();
+
 
         timer = new Timer(DELAY, this);
         timer.start();
@@ -125,7 +130,7 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void gameOver(Graphics g) {  //to show score and langth of the snake when dead and show text to restart
+    private void gameOver(Graphics g) {  //to show score and length of the snake when dead and show text to restart
 
         String msg = "Game Over!";
         String msg2 = "Score: " + score + " " + "Length: " + dots;
@@ -142,29 +147,45 @@ public class Board extends JPanel implements ActionListener {
         g.setColor(Color.YELLOW);
         FontMetrics metrics = getFontMetrics(small);
         g.drawString(restartMessage, (B_WIDTH - metrics.stringWidth(restartMessage)) / 2, (B_HEIGHT / 2) + 40);
+
+        String mainmenu = " Press Spacebar to back to main menu";
+        g.setColor(Color.GREEN);
+        g.drawString(mainmenu, (B_WIDTH - metrics.stringWidth(mainmenu)) / 2, (B_HEIGHT / 2) + 60);
     }
 
     private void Score(Graphics g) {  //to show score at the right corner
         Font small = new Font("helvetica", Font.BOLD, 14);
         g.setColor(Color.WHITE);
         g.setFont(small);
-        g.drawString("Score: " + score, 520, 25);
-      //  g.drawString("Speed: " + timer.getDelay(), 520, 45);
+        if(normalMode == true){
+            g.drawString("Mode: Normal", 490, 25);
+        }
+        if(luckMode == true){
+            g.drawString("Mode: Luck", 490, 25);
+        }
+
+        g.drawString("Score: " + score, 490, 45);
+      //  g.drawString("Speed: " + timer.getDelay(), 490, 65);
     }
 
 
 
     public void startMessageDisplay(Graphics g) {  //show the start screen when open game first time
         String msg = "Welcome to Snake Game!";
-        String msg2 = "Press spacebar to start game";
+        String msg2 = "Press N to Normal mode game";
+        String msg3 = "Press L to Luck mode game";
+        String msg4 = "Press R to random mode game";
+
         Font small = new Font("helvetica ",Font.BOLD,16 );
         FontMetrics messageSize = getFontMetrics(small);
 
         g.setColor(Color.green);
         g.setFont(small);
-        g.drawString(msg, (B_WIDTH - messageSize.stringWidth(msg)) / 2, B_HEIGHT / 2);
+        g.drawString(msg, (B_WIDTH - messageSize.stringWidth(msg)) / 2, B_HEIGHT / 2 -30);
         g.setColor(Color.WHITE);
-        g.drawString(msg2, (B_WIDTH - messageSize.stringWidth(msg2)) / 2, (B_HEIGHT / 2) + 30);
+        g.drawString(msg2, (B_WIDTH - messageSize.stringWidth(msg2)) / 2, (B_HEIGHT / 2));
+        g.drawString(msg3, (B_WIDTH - messageSize.stringWidth(msg2)) / 2, (B_HEIGHT / 2) + 20);
+        g.drawString(msg4, (B_WIDTH - messageSize.stringWidth(msg2)) / 2, (B_HEIGHT / 2) + 40);
 
     }
 
@@ -173,13 +194,17 @@ public class Board extends JPanel implements ActionListener {
         double randNeg =(Math.random()); //random to decrease scale of snake or not
         double randPosi =(Math.random()); //random to increase(+3) scale of snake or not
         if ((x[0] == apple_x) && (y[0] == apple_y)) {
-            if(randNeg < 0.5){
-                dots--; //decrease snake length
-            }else{
-                if(randPosi < 0.5){
-                    dots++; //increase snake length by 1
+            if(normalMode == true){
+                dots++;
+            }else {
+                if(randNeg < 0.5){
+                    dots--; //decrease snake length
                 }else{
-                    dots+=3; //increase snake length by 3
+                    if(randPosi > 0.5){
+                        dots++; //increase snake length by 1
+                    }else{
+                        dots+=3; //increase snake length by 3
+                    }
                 }
             }
             score++;  //update score
@@ -316,11 +341,58 @@ public class Board extends JPanel implements ActionListener {
                     initBoard();
                 }
             }
-            //start game
+            //back to menu game
             if(key == KeyEvent.VK_SPACE) {
-                if(!status) {
-                    status = true;
+                if(status == true && inGame == false) {
+                    status = false;
+                    normalMode = false;
+                    luckMode = false;
+                    inGame=false;
+                    leftDirection = false;
+                    rightDirection = true;
+                    upDirection = false;
+                    downDirection = false;
+                    score = 0;
+                    DELAY = 140;
+                    initBoard();
                 }
+
+            }
+
+            //Normal mode
+            if(key == KeyEvent.VK_N) {
+                if(normalMode == false && status == false) {
+                    status = true;
+                    inGame= true;
+                    normalMode = true;
+                }
+            }
+            //luck mode
+            if(key == KeyEvent.VK_L) {
+                if(luckMode == false && status == false) {
+                    status = true;
+                    inGame= true;
+                    luckMode = true;
+                }
+            }
+
+
+            //random mode
+            if(key == KeyEvent.VK_R) {
+                if(inGame == false && status == false){
+                    double randMode = Math.random();
+                    if(randMode > 0.5){
+                        normalMode = true;
+                        luckMode = false;
+                    }else{
+                        luckMode = true;
+                        normalMode = false;
+                    }
+                    status = true;
+                    inGame= true;
+
+                }
+
             }
         }
     }
